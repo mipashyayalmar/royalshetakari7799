@@ -1,0 +1,651 @@
+{% extends 'shop/basic.html' %}
+
+{% block title %} ORDER Royal_Shetkari {% endblock %}
+
+{% load static %}
+{% block body %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="{% static 'template/table_menu.css' %}">
+    <style>
+        .list-group-item {
+            border-right:none;
+            border-left:none;
+            background-color:transparent;
+        }
+        .fa, .fas {
+            padding: 12px;
+            font-weight: 900;
+        }
+        .clear-cart{
+            text-decoration:none;
+            color:white;
+        }
+        .clear-cart:hover{
+            text-decoration:none;
+            color:#FAF9F6;
+        }
+    </style>
+</head>
+<main-body><br><br><br><br>
+    <div id="notification" class="alert alert-primary" role="alert"></div><br>
+    
+    <div class="sidebar" id="sidebar">
+        <div class="heading">
+            <h2>MENU</h2>
+        </div>
+        {% for category, subcats in allProds %}
+        <ul>
+            <li>
+                <a href="javascript:void(0)" class="category-link" data-category="{{ category }}">
+                    {{ category|upper }}
+                </a>
+            </li>
+            <ul class="subcategory-list" id="subcats-{{ category }}">
+                {% for subcategory, products in subcats %}
+                <li>
+                    <a href="javascript:void(0)" class="subcategory-link" data-category="{{ category }}" data-subcategory="{{ subcategory }}">
+                        {{ subcategory|title }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </ul>
+        {% endfor %}
+    </div>
+
+    <div class="main-content" id="product-container">
+        <div class="search-bar">
+            <input type="text" id="search-input" placeholder="Search..." />
+            <button id="search-btn">Search</button>
+        </div>
+
+        <div id="no-results-message" class="menu-items" style="display: none; color: red;">
+            <center>No products matching this NAME.</center>
+        </div>
+        
+        {% for category, subcats in allProds %}
+        {% for subcategory, products in subcats %}
+        <div class="category" data-subcategory="{{ subcategory }}" style="display: none;">
+            {{ subcategory }}
+            <div class="menu-items">
+                {% for product in products %}
+                <div class="menu-items">
+                    <div>
+                        <h5 id="namepr{{ product.id }}" class="product-name card-title" style="display:none;">{{ product.product_name }}</h5>
+                        <div id="divpr{{ product.id }}" class="divpr">
+                            <div style="position: relative;">
+                                <h6 id="pricepr{{ product.id }}" style="color: #ff0000; font-size: 11px; position: absolute; top: -11px; left: 77px;">
+                                    Rs. {{ product.price }} /-
+                                    ({{ product.stock_quantity }})
+                                </h6>
+                                <button id="pr{{ product.id }}" class="menu-item cart" 
+                                    style="padding-top: 16px;"
+                                    data-stock="{{ product.stock_quantity }}">
+                                    {{ product.product_name }}
+                                    <span style="
+                                        position: absolute; 
+                                        left: 0; 
+                                        top: 0; 
+                                        width: 5px; 
+                                        height: 100%; 
+                                        background-color: 
+                                            {% if category == 'व्हेज / veg' %} #32de84 
+                                            {% elif category == 'नॉनव्हेज / nonveg' %} red 
+                                            {% endif %};
+                                    "></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <style>
+                    #notification {
+                        background-color: 
+                            {% if category == 'व्हेज / veg' %} red 
+                            {% elif category == 'nonveg' %} green 
+                            {% endif %};
+                    }
+                </style>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        {% endfor %}
+    </div>
+
+    <div class="container my-4" style="display:none;">
+        <center><h3>Cart Items</h3></center>
+        <div id="cartItems" class="product-container"></div>
+    </div>
+    <style>
+        .fa-search {
+            font-size: 16px;
+            padding: 0px;
+        }
+    </style>
+    <div class="order-section">
+        <div class="order-header">
+            <div>
+                <button id="refreshCart"><i class="fa fa-search" aria-hidden="true"></i> CHECK IN</button>
+                <button>DELIVERY</button>
+                <button>PICK UP</button>
+            </div>
+        </div>
+        <div class="order-list">
+            <ul class="list-group" id="items"></ul>
+        </div>
+        <div class="order-footer">
+            <button id="clearCart">Clear Cart</button>
+            <button id="refreshPage" class="btn btn-secondary">Final Check</button>
+            <li class="list-group-item d-flex justify-content-between align-items-center" style="background: bisque;">
+                <span>TOTAL PRICE:</span>
+                <span class="badge badge-danger badge-pill" id="totalPrice">
+                    <span style="font-size: 5px;">.</span> 0 /-
+                </span>
+            </li>
+        </div>
+
+        <form method="POST" action="{% url 'shop:checkout' %}" id="checkoutForm" onsubmit="return validatePaymentMethod();" style="margin:0px;">
+            {% csrf_token %}
+            <input type="hidden" name="amount" value="{{ amount }}">
+            <div class="order-footer-payment">
+                <div class="payment-options">
+                    <label>
+                        <input type="radio" name="payment_method" value="cash"> Cash
+                    </label>
+                    <label>
+                        <input type="radio" name="payment_method" value="online"> Online
+                    </label>
+                    <label>
+                        <input type="radio" name="payment_method" value="card"> Card
+                    </label>
+                    <label>
+                        <input type="radio" name="payment_method" value="other"> Other
+                    </label>
+                </div>
+                <div id="payment_comments_container" style="display:none;">
+                    <label for="payment_comments">Comments :</label>
+                    <input type="text" name="payment_comments" id="payment_comments" class="form-control" placeholder="Enter comment">
+                </div>
+            </div>
+            <div id="payment-alert" style="display: none; background-color: #d4edda; color: #155724; padding: 10px; border: 1px solid #c3e6cb;">
+                Please choose a payment method!
+            </div>
+            {% if user.is_authenticated %}
+            <div class="final-options">
+                <input type="hidden" name="itemsJson" id="itemsJson">
+                <input type="hidden" name="amount" id="amount">
+                <input type="hidden" name="user_id" id="user_id" value="{{ request.user.id }}">
+                <div class="print">
+                    <button type="submit" name="action" value="save">Save</button>
+                    <button type="submit" name="action" value="save_print" id="printCartItems">Save & Print</button>
+                    <button type="button" id="counterPrint">Counter Print</button>
+                    <button type="submit" name="action" value="save_bill">Save & Bill</button>
+                    <button type="button" id="kotPrint">KOT</button>
+                    <button type="submit" name="action" value="kot_print">KOT & Print</button>
+                </div>
+            </div>
+            {% else %}
+            <div id="cont2">
+                <div class="alert alert-info">
+                    <font style="font-size:22px"><center>Before Save you need to <strong><a class="alert-link" data-toggle="modal" data-target="#loginModal">Login</a></strong></center></font>
+                </div>
+            </div>
+            {% endif %}
+        </form>
+
+        <div id="commentModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:1000;">
+            <div style="background-color:white; margin:20% auto; padding:20px; width:300px; text-align:center; border-radius:5px;">
+                <h3>Enter Your Comments</h3>
+                <textarea id="modal_payment_comments" class="form-control" placeholder="Enter comments here..."></textarea>
+                <br>
+                <button id="submitComments" style="margin-top:10px;">Submit</button>
+                <button onclick="closeModal()" style="margin-top:10px;">Cancel</button>
+            </div>
+        </div>
+    </div>
+</main-body>
+<script src="{% static 'template/table_menu.js' %}"></script>
+{% endblock %}
+
+{% block js %}
+<script>
+// Audio elements for sound effects
+var soundEffect = new Audio("{% static 'sound/fav.mp3' %}");
+var soundEffects2 = new Audio("{% static 'sound/90s-game-ui-6-185099.mp3' %}");
+var soundEffect1 = new Audio("{% static 'sound/mausklick-82774.mp3' %}");
+
+// Get a unique identifier for each cart (based on the URL)
+function getCartKey() {
+    var pathname = window.location.pathname;
+    return 'cart_' + pathname.replace(/\//g, '_');
+}
+
+// Initialize the cart
+var cartKey = getCartKey();
+var cart = JSON.parse(localStorage.getItem(cartKey)) || {};
+
+// Function to show notifications
+function showNotification(message) {
+    var notification = document.getElementById('notification');
+    notification.innerText = message;
+    notification.style.display = 'block';
+    setTimeout(function() {
+        notification.style.display = 'none';
+    }, 1000);
+}
+
+// Function to print receipt (Counter or KOT)
+function printReceipt(printerType, billNo = null) {
+    let items = document.querySelectorAll('#items li');
+    let totalPriceText = document.getElementById('totalPrice').innerText;
+    
+    let printWindow = window.open('', printerType === 'kot' ? 'KOT' : 'Counter Receipt', 'width=80mm,height=auto');
+    printWindow.document.write('<html><head><title>' + (printerType === 'kot' ? 'KOT' : 'RECEIPT OF ROYAL SHETKARI') + '</title>');
+    
+    printWindow.document.write(`
+        <style>
+            @media print {
+                body {
+                    width: 95%;
+                    font-family: 'Courier New', monospace;
+                    padding: 10px;
+                    margin: 0;
+                    border: 2px dotted black;
+                    line-height: 1.2;
+                }
+                h3, h4, h5 {
+                    text-align: center;
+                    margin: 5px 0;
+                }
+                h4 {
+                    border-bottom: 1px solid black;
+                    width: 99%;
+                    margin-bottom: 10px;
+                }
+                .cart-item {
+                    border-bottom: 1px dashed black;
+                    padding-bottom: 5px;
+                    margin-bottom: 5px;
+                }
+                .total {
+                    font-weight: bold;
+                    text-align: right;
+                    padding: 5px 0;
+                }
+                .footer-text {
+                    text-align: center;
+                    margin-top: 10px;
+                    border-top: 1px solid black;
+                    padding-top: 5px;
+                }
+                .bill-no {
+                    text-align: center;
+                    font-weight: bold;
+                    margin: 5px 0;
+                }
+            }
+        </style>
+    `);
+
+    printWindow.document.write('</head><body>');
+
+    if (printerType === 'counter') {
+        printWindow.document.write('<h3>रॉयल शेतकरी</h3>');
+        printWindow.document.write('<h5>प्रोप्रा. अभिजीत कोळवले</h5>');
+        printWindow.document.write('<h5>मो. ९३७०७०२५८६</h5>');
+        printWindow.document.write('<h5>तेजस अ‍ॅग्रो शेजारी, पंढरपूर-पुणे हायवे, भंडीशेगाव, ता. पंढरपूर, जि. सोलापूर</h5>');
+        if (billNo) {
+            printWindow.document.write(`<div class="bill-no">Bill No: ${billNo}</div>`);
+        }
+    } else {
+        printWindow.document.write('<h3>KOT - रॉयल शेतकरी</h3>');
+        if (billNo) {
+            printWindow.document.write(`<div class="bill-no">Order No: ${billNo}</div>`);
+        }
+    }
+
+    printWindow.document.write('<hr>');
+    printWindow.document.write('<h4>' + (printerType === 'kot' ? 'Kitchen Order Ticket' : 'Your Cart Items') + '</h4>');
+
+    let subtotal = 0;
+    let totalQuantity = 0;
+
+    printWindow.document.write('<div class="content">');
+    items.forEach((item, index) => {
+        let itemName = item.querySelector('.item-name') ? item.querySelector('.item-name').innerText : 'Unknown';
+        let itemQty = item.querySelector('.qty-input') ? parseInt(item.querySelector('.qty-input').value) : 0;
+        let itemPrice = item.querySelector('.original-item-price') ? parseFloat(item.querySelector('.original-item-price').innerText.replace('Rs. ', '').trim()) : 0;
+
+        if (itemName !== 'Unknown' && itemQty > 0) {
+            let itemTotal = itemQty * itemPrice;
+            subtotal += itemTotal;
+            totalQuantity += itemQty;
+
+            let productNames = itemName.split('/');
+            let marathiName = productNames[0] ? productNames[0].trim() : '';
+            let englishName = productNames[1] ? productNames[1].trim() : '';
+
+            printWindow.document.write(`
+                <div class="cart-item">
+                    <li>${index + 1}. ${marathiName} / ${englishName} x ${itemQty} @ Rs. ${itemPrice.toFixed(2)} 
+                    <span class="amount"> = Rs. ${itemTotal.toFixed(2)}</span></li>
+                </div>
+            `);
+        }
+    });
+
+    printWindow.document.write(`
+        <p>Total Quantity: ${totalQuantity}</p>
+        <p class="total">Total Price (with tax): Rs. ${totalPriceText}</p>
+    `);
+
+    printWindow.document.write('</div>');
+    printWindow.document.write('<div class="footer-text">Visit Again! This software was developed by Prasad Yalmar.</div>');
+    printWindow.document.write('</body></html>');
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
+}
+
+// Function to clear the cart
+function clearCart() {
+    cart = {};
+    localStorage.removeItem(cartKey);
+    $('#items').html('');
+    $('#totalPrice').html('Rs. 0 /-');
+    $('.menu-item').css('background-color', '');
+    $('.category').css('background-color', '');
+    showNotification('Cart cleared successfully!');
+    soundEffects2.play();
+}
+
+// Update the cart display
+function updateCart() {
+    var totalItems = 0;
+    var totalPrice = 0;
+    var cartItems = '';
+    var i = 0;
+
+    for (var item in cart) {
+        var name = cart[item][1];
+        var qty = cart[item][0];
+        var itemPrice = cart[item][2];
+        var itemTotal = qty * itemPrice;
+
+        totalItems += qty;
+        totalPrice += itemTotal;
+        cartItems += `
+            <li class="order-item list-group-item d-flex justify-content-between align-items-center" id="item-${item}">
+                <div class="item-info">
+                    <i class="fas hover-icon remove-item" id="delete${item}" style="cursor: pointer;"></i>
+                    <img src="https://content.jdmagicbox.com/v2/comp/pandharpur/e5/9999p2186.2186.240102180603.t9e5/catalogue/hotel-royal-shetkari-bhandishegaon-pandharpur-restaurants-m844m8eap3.jpg" alt="" width="30" height="30"/>
+                    <div class="item-name"><a href='/shop/search/?search=${name}' class='alert-link'><span>${++i}: ${name}</span></a></div>
+                </div>
+                <div class="item-quantity">
+                    <button id="decrease${item}" class="btn btn-primary btn-sm decrease">-</button>
+                    <input type="number" id="val-${item}" class="form-control qty-input" value="${qty}" min="0"/>
+                    <button id="increase${item}" class="btn btn-primary btn-sm increase">+</button>
+                </div>
+                <div class="original-item-price">
+                    Rs. ${itemPrice}
+                    <div class="item-price">Rs. ${itemTotal}</div>
+                </div>
+            </li>`;
+    }
+
+    cartItems += `
+        <li class="list-group-item d-flex justify-content-between align-items-center" style="background: bisque;">
+            <span>TOTAL PRICE:</span>
+            <span class="badge badge-danger badge-pill" id="totalPrice">Rs. ${totalPrice} /-</span>
+        </li>`;
+
+    $('#items').html(cartItems);
+    localStorage.setItem(cartKey, JSON.stringify(cart));
+    $('#itemsJson').val(JSON.stringify(cart));
+    $('#amount').val(totalPrice);
+}
+
+// Initialize cart
+function initializeCart(cart) {
+    updateCart();
+}
+
+// Event listeners for cart buttons
+document.addEventListener('click', function(event) {
+    if (event.target.classList.contains('cart')) {
+        var idstr = event.target.id.toString().slice(2);
+        var stock = parseInt(event.target.getAttribute('data-stock'));
+        var name = document.getElementById('namepr' + idstr).innerHTML;
+        
+        if (stock <= 0) {
+            showNotification(name + " is out of stock!");
+            return;
+        }
+        
+        if (!cart[idstr]) {
+            var price = parseInt(document.getElementById('pricepr' + idstr).innerText.replace('Rs. ', '').replace(' /-', ''));
+            cart[idstr] = [1, name, price];
+            showNotification(name + " added to cart");
+        } else {
+            if (cart[idstr][0] >= stock) {
+                showNotification("Only " + stock + " " + name + " available - can't add more!");
+                return;
+            }
+            cart[idstr][0] += 1;
+            showNotification(name + " quantity increased to " + cart[idstr][0]);
+        }
+
+        soundEffect.play();
+        updateCart();
+    }
+});
+
+// Add and remove item functionality
+$('#items').on('click', 'button.decrease', function() {
+    var id = this.id.slice(8);
+    if (cart[id]) {
+        cart[id][0] = Math.max(0, cart[id][0] - 1);
+        if (cart[id][0] === 0) {
+            delete cart[id];
+        }
+        updateCart();
+    }
+});
+
+$('#items').on('click', 'button.increase', function() {
+    var id = this.id.slice(8);
+    if (cart[id]) {
+        cart[id][0] += 1;
+        updateCart();
+    }
+});
+
+$('#items').on('change', 'input.qty-input', function() {
+    var id = this.id.slice(3);
+    var newQty = parseInt(this.value);
+    if (newQty > 0) {
+        cart[id][0] = newQty;
+    } else {
+        delete cart[id];
+    }
+    updateCart();
+});
+
+$('#items').on('click', 'i.remove-item', function() {
+    var id = this.id.slice(6);
+    delete cart[id];
+    updateCart();
+});
+
+// Payment method handling
+const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+const paymentCommentsContainer = document.getElementById('payment_comments_container');
+const paymentCommentsInput = document.getElementById('payment_comments');
+const modal = document.getElementById('commentModal');
+const modalCommentsInput = document.getElementById('modal_payment_comments');
+
+paymentRadios.forEach(radio => {
+    radio.addEventListener('change', function() {
+        soundEffect1.play();
+        if (this.value === 'other') {
+            modal.style.display = 'block';
+        } else {
+            paymentCommentsContainer.style.display = 'none';
+            paymentCommentsInput.value = '';
+        }
+    });
+});
+
+function closeModal() {
+    modal.style.display = 'none';
+    modalCommentsInput.value = '';
+}
+
+document.getElementById('submitComments').addEventListener('click', function() {
+    const comments = modalCommentsInput.value.trim();
+    if (comments) {
+        paymentCommentsInput.value = comments;
+        closeModal();
+        paymentCommentsContainer.style.display = 'block';
+    } else {
+        alert('Please enter a comment before submitting.');
+    }
+});
+
+// Validate payment method
+function validatePaymentMethod() {
+    const paymentMethods = document.getElementsByName('payment_method');
+    let isSelected = false;
+
+    for (const method of paymentMethods) {
+        if (method.checked) {
+            isSelected = true;
+            break;
+        }
+    }
+
+    const alertDiv = document.getElementById('payment-alert');
+    if (!isSelected) {
+        alertDiv.style.display = 'block';
+        showNotification('Please choose a payment method!');
+        return false;
+    } else {
+        alertDiv.style.display = 'none';
+        return true;
+    }
+}
+
+// KOT print button (print only, no save)
+$('#kotPrint').on('click', function() {
+    if (Object.keys(cart).length === 0) {
+        showNotification('Your cart is empty. Please add items to print KOT.');
+        return;
+    }
+    printReceipt('kot');
+});
+
+// Counter print button
+$('#counterPrint').on('click', function() {
+    if (Object.keys(cart).length === 0) {
+        showNotification('Your cart is empty. Please add items to print.');
+        return;
+    }
+    printReceipt('counter');
+});
+
+// Handle form submission with AJAX
+$('#checkoutForm').on('submit', function(event) {
+    event.preventDefault();
+
+    if (Object.keys(cart).length === 0) {
+        showNotification('Your cart is empty. Please add items to your cart before checking out.');
+        return;
+    }
+
+    if (!validatePaymentMethod()) {
+        return;
+    }
+
+    var submitter = event.originalEvent.submitter;
+    var action = submitter ? submitter.value : 'save';
+    var printAfterSave = action === 'save_print';
+    var kotAndPrint = action === 'kot_print';
+    var saveAndBill = action === 'save_bill';
+
+    var formData = new FormData(this);
+    formData.append('action', action);
+
+    if (printAfterSave) {
+        printReceipt('counter');
+    }
+
+    $.ajax({
+        url: '{% url "shop:checkout" %}',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            let billNo = response.bill_no || null;
+            showNotification('Order processed successfully for ' + action + '!');
+            if (kotAndPrint) {
+                printReceipt('kot', billNo);
+                printReceipt('counter', billNo);
+            } else if (saveAndBill) {
+                printReceipt('counter', billNo);
+            }
+            if (action === 'save' || action === 'save_print' || action === 'save_bill' || action === 'kot_print') {
+                clearCart();
+                updateCart();
+            }
+            $('#checkoutForm')[0].reset();
+            $('#payment_comments_container').css('display', 'none');
+            $('#payment_comments').val('');
+        },
+        error: function(xhr, status, error) {
+            showNotification('Error processing order: ' + (xhr.responseText || error));
+            console.log('AJAX Error:', status, error, xhr.responseText);
+        }
+    });
+});
+
+// Clear cart button
+$('#clearCart').on('click', function() {
+    const userConfirmed = confirm('Are you sure you want to clear the cart? This action cannot be undone.');
+    if (userConfirmed) {
+        clearCart();
+        alert('Your cart has been cleared.');
+    } else {
+        showNotification('Cart clearing was cancelled.');
+    }
+});
+
+// Refresh page button
+$('#refreshPage').on('click', function() {
+    soundEffect1.play();
+    setTimeout(function() {
+        location.reload();
+    }, 500);
+    $('.menu-item').css('background-color', '');
+    $('.category').css('background-color', '');
+});
+
+// Handle Django messages
+{% if messages %}
+    {% for message in messages %}
+        alert('{{ message }}');
+    {% endfor %}
+    clearCart();
+    updateCart();
+{% endif %}
+
+initializeCart(cart);
+</script>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'admin/base.html' %}
+{% load static %}
+
+{% block extrastyle %}
+<!-- Set favicon with round shape and link -->
+<link rel="icon" type="image/png" href="{% static 'dist/img/favicon.png' %}" sizes="36x36" />
+<!-- Admin Panel stylesheet -->
+<link rel="stylesheet" href="{% static 'shop/assets/css/adminstyle.css' %}" />
+{% endblock %}
+
+<!-- Title with red color -->
+<title>ADMIN PANNEL</title>
+
+{% block branding %}
+<style>
+  .login #header {
+    background-color: orange;
+    height: auto;
+    padding: 15px 16px;
+    justify-content: center;
+  }
+  .errornote {
+    font-size: 0.875rem;
+    font-weight: 700;
+    display: block;
+    padding: 10px 12px;
+    margin: 0 0 10px 0;
+    color: #ffffff;
+    border: 1px solid var(--error-fg);
+    border-radius: 4px;
+    background-color: var(--body-bg);
+    background-position: 5px 12px;
+    overflow-wrap: break-word;
+  }
+  /* Style the title to be red */
+  h1#head a {
+    color: red; /* Apply red color to the title link */
+    text-decoration: none;
+  }
+</style>
+
+<!-- Header section with favicon logo and title -->
+<h1 id="head">
+  <a href="https://mipashyayalmar.github.io/-Profile-data/">
+    <img src="{% static 'dist/img/favicon.png' %}" style="width: 52px; height: 52px; border-radius: 50%;" /> ROYAL SHETKARI
+  </a>
+</h1>
+
+{% endblock %}

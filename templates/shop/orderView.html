@@ -1,0 +1,259 @@
+{% extends 'shop/basic.html' %}
+{% block title %} Orders - Royal Shetkari {% endblock %}
+
+{% load static %}
+{% block css %}
+<link href="{% static 'template/all_template.css' %}" rel="stylesheet">
+<style>
+    .payment-summary {
+        margin-top: 20px;
+    }
+    .badge-cash {
+        background-color: #28a745; /* Green for Cash */
+    }
+    .badge-online {
+        background-color: #007bff; /* Blue for Online */
+    }
+    .badge-card {
+        background-color: #ffc107; /* Yellow for Card */
+    }
+    .badge-other {
+        background-color: #dc3545; /* Red for Other */
+    }
+    .payment-summary li {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px;
+    }
+    .payment-method-cash,
+.payment-method-online,
+.payment-method-card,
+.payment-method-other {
+    height: 32px;
+    width: 55px; 
+    display: inline-flex;
+    justify-content: center;
+    align-items: center; 
+    text-align: center;
+}
+
+.payment-method-cash {
+    background-color: #28a745;
+    color: white;
+}
+
+.payment-method-online {
+    background-color: #007bff;
+    color: white;
+}
+
+.payment-method-card {
+    background-color: #ffc107;
+    color: black;
+}
+
+.payment-method-other {
+    background-color: #dc3545;
+    color: white;
+}
+</style>
+{% endblock %}
+
+{% block body %}
+{% if user.is_authenticated %}
+<div class="container" id="cont" style="padding-bottom: 89px;">
+    <div class="table-wrapper">
+        <div class="table-title">
+            <div class="row">
+                <div class="col-sm-8">
+                    <h2>Order <b>Details</b></h2>
+                </div>
+                <div class="col-sm-8">
+                    <form id="filterForm" method="post" action="">
+                        {% csrf_token %}{% if user.last_name == "admin" %}
+                        <input type="date" id="startDate" name="start_date" class="form-control" style="width: auto; display: inline-block;">
+                        <input type="date" id="endDate" name="end_date" class="form-control" style="width: auto; display: inline-block;">
+                        
+                        <select name="payment_method" class="form-control" style="width: auto; display: inline-block;">
+                            <option value="">Payment Methods</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Card">Card</option>
+                            <option value="Online">Online</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    {% else %}
+                        <p>admin required</p>
+                    {% endif %}
+                    </div>
+                        <button type="submit" id="filterDate" class="btn btn-primary">Filter and Calculate Total</button>
+                        <a href="" class="btn btn-primary"><span>Refresh List</span></a>
+                        <a href="#" onclick="window.print()" class="btn btn-info no-print"><i class="material-icons">&#xE24D;</i> <span>Print</span></a>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+<table class="table table-striped table-hover table-responsive-sm">
+    
+    <thead>
+        <tr>
+            <th>No.</th>
+            <th>Order Id</th>
+            <th>Order Date</th>
+            <th>Payment Method</th>
+            <th>Payment Remark</th>
+            <th>Items</th>
+            <th style="padding-left:76px;">Update</th>
+            <th>Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in orderHistory %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ i.order_id }}</td>
+            <td>{{ i.timestamp }}</td>
+            <td class="payment-method-{{ i.payment_method|lower }}">{{ i.payment_method }}</td>
+            <td>
+                {% if i.payment_comments %}
+                    {% if i.payment_comments|length > 20 %}
+                        {{ i.payment_comments|slice:":10" }}... 
+                        <a href="#" class="eye-button" onclick="toggleComments('{{ i.order_id }}')">👁️</a>
+                        <span id="fullComment{{ i.order_id }}" style="display:none;">{{ i.payment_comments }}</span>
+                    {% else %}
+                        {{ i.payment_comments }}
+                    {% endif %}
+                {% else %}
+                    NA
+                {% endif %}
+            </td>
+            <td><a href="#" id="click{{ i.order_id }}" class="view" title="View Details"><i class="material-icons">&#xE5C8;</i></a></td>
+            <td><a href="{% url 'shop:update_order' i.order_id %}" class="btn btn-warning">Check clear</a></td>
+            <td>Rs. {{ i.amount }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if user.last_name == 'admin' %}
+<div class="payment-method-summary">
+    <h4>Payment Method Breakdown (Selected Date)</h4>
+    <ul class="list-group payment-summary">
+        <li class="list-group-item">Cash Payments: <span class="badge badge-cash">Rs. {{ cash_total }}</span></li>
+        <li class="list-group-item">Card Payments: <span class="badge badge-card">Rs. {{ card_total }}</span></li>
+        <li class="list-group-item">Online Payments: <span class="badge badge-online">Rs. {{ online_total }}</span></li>
+        <li class="list-group-item">Other Payments: <span class="badge badge-other">Rs. {{ other_total }}</span></li>
+    </ul>
+</div>
+<div id="citems"></div>
+<div>
+    <li class="list-group-item d-flex justify-content-between align-items-center" style="background: bisque; font-weight: bold; font-size: 19px;">
+        Selected Date For Check Amount:
+        <span class="badge badge-danger badge-pill" style="font-size: 19px;">Rs. {{ total_amount }}</span>
+    </li>
+</div>
+</div>
+{% else %}
+        <div id="citems"></div>
+        <div>
+            <li class="list-group-item d-flex justify-content-between align-items-center" style="background: bisque; font-weight: bold; font-size: 19px;">
+                Selected Date For Check Amount:
+                <span class="badge badge-danger badge-pill" style="font-size: 19px;">Rs. {{ total_amount }}</span>
+            </li>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% else %}
+    <div id="cont2">
+        <div class="alert alert-info">
+            <font style="font-size:22px"><center>You need to <strong><a class="alert-link" data-toggle="modal" data-target="#loginModal">Login</a></strong></center></font>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block js %}
+<script>
+    function toggleComments(orderId) {
+        const fullComment = document.getElementById(`fullComment${orderId}`);
+        if (fullComment.style.display === "none") {
+            fullComment.style.display = "inline";
+        } else {
+            fullComment.style.display = "none";
+        }
+    }
+</script>
+
+<script>
+$(document).ready(function() {
+    {% for i in orderHistory %}
+    $('#click{{i.order_id}}').click(function() {
+        $('#citems').empty();
+        
+        let orderDetails = `
+            <div class="logo-section"></div>
+            <h3>रॉयल शेतकरी</h3>
+            <h5>प्रोप्रा. अभिजीत कोळवले</h5>
+            <h5>मो. ९३७०७०२५८६</h5>
+            <h5>तेजस अ‍ॅग्रो शेजारी, पंढरपूर-पुणे हायवे, भंडीशेगाव, ता. पंढरपूर, जि. सोलापूर </h5>
+        `;
+        $('#citems').append(orderDetails);
+        
+        let mydata = "{{i.items_json}}";
+        mydata = mydata.replace(/&quot;/g, '"');
+        let obj = JSON.parse(mydata);
+        let totalAmount = 0;
+
+        for (let item in obj) {
+            let name = obj[item][1];
+            let qty = obj[item][0];
+            let itemPrice = obj[item][2];
+            let sumPrice = qty * itemPrice;
+            totalAmount += sumPrice;
+
+            let mystr = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                            ${name} 
+                            <span class="badge badge-primary badge-pill">${qty} x Rs. ${itemPrice} = <span class="badge badge-danger badge-pill" style="font-size: 0.8rem;">Rs. ${sumPrice}</span></span>
+                          </li>`;
+            $('#citems').append(mystr);
+        }
+
+        let totalStr = `<li class="list-group-item d-flex justify-content-between align-items-center" style="background: bisque; font-weight: bold; font-size: 19px;">
+                            TOTAL PRICE:
+                            <span class="badge badge-danger badge-pill" id="totalPrice" style="font-size: 19px;">Rs. ${totalAmount} /-</span>
+                        </li>`;
+        $('#citems').append(totalStr);
+
+        let popupContent = $('#citems').html();
+        let popupWindow = window.open('', 'Order Details', 'width=600,height=400');
+        popupWindow.document.write('<html><head><title>Order Details</title>');
+        popupWindow.document.write('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">');
+        popupWindow.document.write('<style>@media print { @page { size: 105mm auto; margin: 10mm; } body { width: 105mm; margin: 0; } .no-print { display: none; } }</style>');
+        popupWindow.document.write('</head><body>');
+        popupWindow.document.write('<div class="container mt-4">');
+        popupWindow.document.write(`
+            <div class="table-title">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <h2>Order <b>Details</b></h2>
+                    </div>
+                    <div class="col-sm-8 no-print">						
+                        <a href="" class="btn btn-primary"><i class="material-icons">&#xE863;</i> <span>Refresh List</span></a>
+                        <a href="#" onclick="window.print()" class="btn btn-info"><i class="material-icons">&#xE24D;</i> <span>Print</span></a>
+                    </div>
+                </div>
+            </div>
+        `);
+        popupWindow.document.write(popupContent);
+        popupWindow.document.write('</div></body></html>');
+        popupWindow.document.close();
+    });
+    {% endfor %}
+});
+</script>
+
+<div class="footer bg-primary text-light" style="width: 100%; position: relative; bottom: 0; left: 0;">
+    <p class="text-center py-2 mb-0">Copyright © 2024 Designed by <a href="https://mipashyayalmar.github.io/-Profile-data/" target="_blank" rel="noopener noreferrer" class="text-light">@Mipashya</a></p>
+  </div>
+{% endblock %}

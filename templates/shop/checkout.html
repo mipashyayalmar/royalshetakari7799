@@ -1,0 +1,166 @@
+{% extends 'shop/basic.html' %}
+
+{% block title %} Checkout - Food Mania {% endblock %}
+{% block css %}
+<style>
+    #cont {
+        min-height: 609px;
+    }
+    #cont2 {
+        min-height: 626px;
+    }
+    .product-card {
+        margin-bottom: 20px;
+    }
+    .product-name, .product-price {
+        text-align: center;
+    }
+    .qty-input {
+        width: 70px;
+        display: inline-block;
+    }
+</style>
+{% endblock %}
+{% block body %}
+
+{% if user.is_authenticated %}
+<div class="container" id="cont">
+    <div class="col my-3">
+        <span id="title"><h2>My Awesome Cart Express Checkout - Review Your Cart Items</h2></span>
+        <div class="my-2">
+            <ul class="list-group" id='items'></ul>
+        </div>
+    </div>
+    <div class="col my-4">
+        <span id="info">
+        <h2>Enter Address & Other Details</h2>
+        <form method="post" action="/shop/checkout/" id="checkoutForm">{% csrf_token %}
+            <input type="hidden" name="itemsJson" id="itemsJson">
+            <input type="hidden" name="amount" id="amount">
+            <input type="hidden" name="user_id" id="user_id" value="{{ request.user.id }}">
+            <div class="form-group">
+                <label for="address">Address</label>
+                <input type="text" class="form-control" id="address" name="address" placeholder="Bhandishegaon" value="Bhandishegaon" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" class="form-control" id="phone" name="phone" placeholder="9172353945" value="9172353945" required pattern="[0-9]{10}">
+            </div>
+            <div class="alert alert-info">
+                <strong>Info!</strong> Online payments are currently disabled, so please choose cash on delivery.
+            </div>
+            <button type="submit" class="btn btn-primary" name="onlinePay" disabled>Online Pay</button>
+            <button type="submit" class="btn btn-primary" name="cashOnDelivery">Cash On Delivery</button>
+        </form>
+        </span>
+    </div>
+</div>
+
+{% else %}
+    <div id="cont2">
+        <div class="alert alert-info">
+            <font style="font-size:22px"><center>Before checkout you need to <strong><a class="alert-link" data-toggle="modal" data-target="#loginModal">Login</a></strong></center></font>
+        </div>
+    </div>
+{% endif %}
+
+{% endblock %}
+
+{% block js %}
+<script>
+if (localStorage.getItem('cart') == null) {
+    var cart = {};
+} else {
+    cart = JSON.parse(localStorage.getItem('cart'));
+}
+
+function updateCart(cart) {
+    var sum = 0;
+    var totalPrice = 0;
+    var cartItems = '';
+    var i = 0;
+    for (var item in cart) {
+        var name = cart[item][1];
+        var qty = cart[item][0];
+        var itemPrice = cart[item][2];
+        var sumPrice = qty * itemPrice;
+        sum += qty;
+        totalPrice += sumPrice;
+        cartItems += `<li class="list-group-item d-flex justify-content-between align-items-center">
+            <button id="delete${item}" class="btn btn-danger btn-sm delete">X</button>
+            <a href='/shop/search/?search=${name}' class='alert-link'><span>${++i}: ${name}</span></a>
+            <span>
+                <button id="minus${item}" class="btn btn-primary btn-sm minus">-</button>
+                <input type="number" id="val${item}" class="form-control qty-input" value="${qty}" min="0">
+                <button id="plus${item}" class="btn btn-primary btn-sm plus">+</button>
+                x Rs. ${itemPrice} = Rs. ${sumPrice}
+            </span>
+        </li>`;
+    }
+    cartItems += `<li class="list-group-item d-flex justify-content-between align-items-center" style="background: bisque;">
+        <span>TOTAL PRICE:</span>
+        <span class="badge badge-danger badge-pill" id="totalPrice">Rs. ${totalPrice} /-</span>
+    </li>`;
+    $('#items').html(cartItems);
+    localStorage.setItem('cart', JSON.stringify(cart));
+    document.getElementById('cart').innerHTML = sum;
+    document.getElementById('totalPrice').innerHTML = totalPrice;
+    $('#itemsJson').val(JSON.stringify(cart));
+    $('#amount').val(totalPrice);
+}
+
+updateCart(cart);
+
+// Add and remove item functionality
+$('#items').on('click', 'button.minus', function() {
+    var id = this.id.slice(5);
+    cart[id][0] = Math.max(0, cart[id][0] - 1);
+    if (cart[id][0] == 0) {
+        delete cart[id];
+    }
+    updateCart(cart);
+});
+
+$('#items').on('click', 'button.plus', function() {
+    var id = this.id.slice(4);
+    cart[id][0] += 1;
+    updateCart(cart);
+});
+
+// Update quantity directly from input
+$('#items').on('change', 'input.qty-input', function() {
+    var id = this.id.slice(3);
+    var newQty = parseInt(this.value);
+    if (newQty > 0) {
+        cart[id][0] = newQty;
+    } else {
+        delete cart[id];
+    }
+    updateCart(cart);
+});
+
+// Delete item
+$('#items').on('click', 'button.delete', function() {
+    var id = this.id.slice(6);
+    delete cart[id];
+    updateCart(cart);
+});
+
+// Prevent form submission if cart is empty
+$('#checkoutForm').on('submit', function(event) {
+    if (Object.keys(cart).length === 0) {
+        event.preventDefault(); // Prevent form submission
+        alert('Your cart is empty. Please add items to your cart before checking out.'); // Alert the user
+    }
+});
+
+// Handle form submission success
+{% if messages %}
+    {% for message in messages %}
+        alert('{{ message }}');
+    {% endfor %}
+    localStorage.removeItem('cart');
+    updateCart({});
+{% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'shop/basic.html' %}
+{% block title %} Inventory - Drinks {% endblock %}
+{% load static %}
+
+{% block body %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+    <style>
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .inventory-table th, .inventory-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .inventory-table th {
+            background-color: #f2f2f2;
+        }
+        .low-stock {
+            background-color: #ffcccc;
+            font-weight: bold;
+        }
+        .notification {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            color: white;
+            text-align: center;
+            padding-top: 20%;
+            font-size: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Drinks Inventory</h2>
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        
+        <table class="inventory-table">
+            <thead>
+                <tr>
+                    <th>Product Name</th>
+                    <th>Subcategory</th>
+                    <th>Price</th>
+                    <th>Stock Quantity</th>
+                    <th>Low Stock Threshold</th>
+                    <th>Image</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for drink in drinks %}
+                <tr {% if drink.stock_quantity <= drink.low_stock_threshold %}class="low-stock"{% endif %}>
+                    <td>{{ drink.product_name }}</td>
+                    <td>{{ drink.subcategory }}</td>
+                    <td>Rs. {{ drink.price }}</td>
+                    <td>{{ drink.stock_quantity }}</td>
+                    <td>{{ drink.low_stock_threshold }}</td>
+                    <td>
+                        {% if drink.image %}
+                            <img src="{{ drink.image.url }}" alt="{{ drink.product_name }}" style="width: 50px; height: auto;">
+                        {% else %}
+                            No Image
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Full-screen low stock notification -->
+    {% if low_stock_products %}
+    <div id="lowStockNotification" class="notification">
+        <h3>Low Stock Alert!</h3>
+        <p>The following products are below their stock threshold:</p>
+        <ul>
+            {% for product in low_stock_products %}
+            <li>{{ product.product_name }}: {{ product.stock_quantity }} remaining</li>
+            {% endfor %}
+        </ul>
+        <button onclick="closeNotification()">Close</button>
+    </div>
+    {% endif %}
+
+    <script>
+        // Show notification if low stock products exist
+        window.onload = function() {
+            const notification = document.getElementById('lowStockNotification');
+            if (notification) {
+                notification.style.display = 'block';
+            }
+        };
+
+        function closeNotification() {
+            document.getElementById('lowStockNotification').style.display = 'none';
+        }
+    </script>
+</body>
+{% endblock %}

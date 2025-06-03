@@ -1,0 +1,492 @@
+{% extends 'shop/basic.html' %}
+{% block title %} Home {% endblock %}
+
+{% block css %}
+<!-- Bootstrap CSS -->
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .sidebar {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 250px;
+        background-color: #f8f9fa;
+        padding: 20px;
+        overflow-y: auto;
+    }
+    .main-content {
+        margin-left: 270px;
+        padding: 20px;
+    }
+    @media screen and (max-width: 600px) {
+    .main-content {
+        margin-left: 100px;
+        padding: 7px 1px 4px 0px;
+    }
+    }
+    .subcat-products {
+        display: none;
+        display: flex;
+        flex-direction: row;
+    }
+    
+.product-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin-left: 50px;
+    padding:20px 20px  100px 20px;
+    margin: 8px -27px 15px 227px;
+    border:1px solid black;
+}
+.product-card {
+    width: 65%;
+    box-sizing: border-box;
+    margin: 0px 20px 20px;
+}
+
+@media screen and (max-width:600px) {
+    .product-card {
+        width: 61%;
+        box-sizing: border-box;
+        margin: 2px 0px 20px;
+    }
+}
+
+@media screen and (min-width:600px) and (max-width: 860px) {
+    .product-card {
+        width: 185px;
+        box-sizing: border-box;
+        margin-bottom: 20px;
+    }
+}
+
+@media screen and (min-width: 860px)  {
+    .product-card {
+        width: 190px;
+        box-sizing: border-box;
+        margin-bottom: 20px;
+    }
+}
+
+element.style {
+    display: flex;
+    flex-direction: row;
+}
+
+@import url(//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css);
+
+@import url(https://fonts.googleapis.com/css?family=Titillium+Web:300);
+.fa-2x {
+font-size: 2em;
+}
+.fa {
+position: relative;
+display: table-cell;
+width: 60px;
+height: 36px;
+text-align: center;
+vertical-align: middle;
+font-size:20px;
+}
+
+
+.main-menu:hover,nav.main-menu.expanded {
+width:250px;
+overflow:visible;
+}
+
+
+.main-menu {
+margin-top:7.5%;
+background-color: transperent;
+border-right:1px solid #e5e5e5;
+position:absolute;
+top:0;
+bottom:0;
+height:150%;
+left:0;
+width:60px;
+overflow:hidden;
+-webkit-transition:width .05s linear;
+transition:width .05s linear;
+-webkit-transform:translateZ(0) scale(1,1);
+z-index:1000;
+}
+@media screen and (max-width: 600px) {
+    .main-menu {
+        background-color: rgba(255, 255, 255, 0.8);
+    
+    }
+}
+
+@media screen and (min-width: 700px) {
+    .main-menu {
+        width:250px;
+    
+    }
+}
+
+@media screen and (max-width: 720px) {
+    .main-menu {
+        margin-top: 12%;
+    }
+    .product-container {
+       
+        padding: -29px -11px 67px 20px;
+        margin: 8px -131px 0px 0;
+        border: 1px solid black;
+    }
+}
+@media screen and (min-width: 1050px) {
+    .main-menu {
+        margin-top: 3.5%;
+    }
+}
+
+.main-menu>ul {
+margin:7px 0;
+}
+.main-category{
+   
+color:black;
+
+}
+
+.main-menu li {
+position:relative;
+display:block;
+width:250px;
+}
+
+.main-menu li>a {
+position:relative;
+display:table;
+border-collapse:collapse;
+border-spacing:0;
+color:#999;
+ font-family: arial;
+font-size: 14px;
+text-decoration:none;
+-webkit-transform:translateZ(0) scale(1,1);
+-webkit-transition:all .1s linear;
+transition:all .1s linear;
+  
+}
+
+.main-menu .nav-icon {
+position:relative;
+display:table-cell;
+width:60px;
+height:36px;
+text-align:center;
+vertical-align:middle;
+font-size:18px;
+}
+
+.main-menu .nav-text {
+position:relative;
+display:table-cell;
+vertical-align:middle;
+width:190px;
+  font-family: 'Titillium Web', sans-serif;
+}
+
+.main-menu>ul.logout {
+position:absolute;
+left:0;
+bottom:0;
+}
+
+.no-touch .scrollable.hover {
+overflow-y:hidden;
+}
+
+.no-touch .scrollable.hover:hover {
+overflow-y:auto;
+overflow:visible;
+}
+
+a:hover,a:focus {
+text-decoration:none;
+}
+
+nav {
+-webkit-user-select:none;
+-moz-user-select:none;
+-ms-user-select:none;
+-o-user-select:none;
+user-select:none;
+}
+
+nav ul,nav li {
+outline:0;
+margin:0;
+padding:0;
+}
+.main-menu li:hover>a,nav.main-menu li.active>a,.dropdown-menu>li>a:hover,.dropdown-menu>li>a:focus,.dropdown-menu>.active>a,.dropdown-menu>.active>a:hover,.dropdown-menu>.active>a:focus,.no-touch .dashboard-page nav.dashboard-menu ul li:hover a,.dashboard-page nav.dashboard-menu ul li.active a {
+color:#fff;
+background-color:#000000;
+}
+.area {
+float: left;
+background: #e2e2e2;
+width: 100%;
+height: 100%;
+}
+@font-face {
+  font-family: 'Titillium Web';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Titillium WebLight'), local('TitilliumWeb-Light'), url(http://themes.googleusercontent.com/static/fonts/titilliumweb/v2/anMUvcNT0H1YN4FII8wpr24bNCNEoFTpS2BTjF6FB5E.woff) format('woff');
+}
+
+ </style>
+{% endblock %}
+
+{% block body %}
+{% load static %}
+<link href="{% static 'template/all_template.css' %}" rel="stylesheet">
+<div id="notification" style="margin-top:50px"></div>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        {% comment %} <div class="col-md-3 sidebar">
+            <h3>Categories</h3>
+            {% for category, subcats in allProds %}
+            <center><h4>{{ category|upper }}</h4></center>
+            <ul class="list-group">
+                {% for subcat, _ in subcats %}
+                {% if subcat %}
+                <li class="list-group-item">
+                    <button class="btn btn-link" onclick="showProducts('{{ category|escapejs }}', '{{ subcat|escapejs }}')">{{ subcat }}</button>
+                </li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+            {% endfor %}
+        </div> {% endcomment %}
+
+
+
+
+        <div class="area"></div><nav class="main-menu">
+            {% for category, subcats in allProds %}
+    <h3 class="main-category">{{ category|upper }}</h3>
+    {% for subcat, _ in subcats %}
+                {% if subcat %}
+            <ul>
+                
+                <li>
+                    <a>
+                        <i class="	fa fa-certificate"></i>
+                        <span class="nav-text">
+                            
+                            <button class="btn btn-link" onclick="showProducts('{{ category|escapejs }}', '{{ subcat|escapejs }}')">{{ subcat|upper }}</button>
+                        </span>
+                    </a>
+                  
+                </li>
+                {% endif %}
+                {% endfor %}
+            </ul>
+            {% endfor %}
+            {% comment %} <ul class="logout">
+                <li>
+                   <a href="#">
+                         <i class="fa fa-power-off fa-2x"></i>
+                        <span class="nav-text">
+                            Logout
+                        </span>
+                    </a>
+                </li>  
+            </ul> {% endcomment %}
+        </nav>
+
+
+
+
+
+
+
+
+
+
+        <!-- Main Content -->
+        <div class="col-md-9 main-content">
+            <h3>PRODUCTS</h3>
+            <div id="productsContainer">
+                {% for category, subcats in allProds %}
+                {% for subcat, products in subcats %}
+
+                <h4 style="color: orange;">{{ subcat|upper }}</h4>
+                
+                <div class="subcat-products" id="products-{{ category|escapejs }}-{{ subcat|escapejs }}"style="
+                display: flex;
+                flex-direction: row;
+            "><br>
+                    
+                    {% for product in products %}
+                    <div class="product-card card align-items-center">
+                        <img src='/media/{{ product.image }}' class="card-img-top" alt="{{ product.product_name }}">
+                        <div class="card-body">
+                            <h5 class="card-title" id="namepr{{ product.id }}">{{ product.product_name|slice:"0:20" }}...</h5>
+                            <h6 style="color: #ff0000">Rs. <span id="pricepr{{ product.id }}">{{ product.price }}</span> /-</h6>
+                            <p class="card-text">{{ product.desc|slice:"0:23" }}...</p>
+
+                            <div id="divpr{{ product.id }}">
+                                <button id="pr{{ product.id }}" class="btn btn-primary cart"style='border:1px solid black;margin:2px;'>+ Add</button>
+                            
+                            <a href="/shop/productView/{{ product.id }}" class="btn btn-primary">View</a>
+                        </div>
+                            
+                        <br>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-2">
+    <center><h3>SELECTED CART ITEMS</h3></center>
+    <div id="cartItems" class="product-container"></div>
+</div>
+{% endblock %}
+
+{% block js %}
+<!-- Bootstrap Bundle with Popper.js -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+<script>
+if (localStorage.getItem('cart') == null) {
+    var cart = {};
+} else {
+    cart = JSON.parse(localStorage.getItem('cart'));
+    updateCart(cart);
+}
+
+document.addEventListener('click', function(event) {
+    if (event.target.classList.contains('cart')) {
+        var idstr = event.target.id.toString().slice(2);
+        if (cart[idstr] != undefined) {
+            cart[idstr][0] += 1;
+            showNotification(cart[idstr][1] + " quantity increased to " + cart[idstr][0]);
+        } else {
+            var name = document.getElementById('namepr' + idstr).innerHTML;
+            var price = document.getElementById('pricepr' + idstr).innerHTML;
+            cart[idstr] = [1, name, parseInt(price)];
+            showNotification(cart[idstr][1] + " added to cart");
+        }
+        updateCart(cart);
+    }
+
+    if (event.target.classList.contains('minus')) {
+        var id = event.target.id.slice(5);
+        if (cart[id][0] > 0) {
+            cart[id][0] = Math.max(0, cart[id][0] - 1);
+            if (cart[id][0] == 0) {
+                showNotification(cart[id][1] + " removed from cart");
+                delete cart[id];
+            } else {
+                showNotification(cart[id][1] + " quantity decreased to " + cart[id][0]);
+            }
+            updateCart(cart);
+        }
+    }
+
+    if (event.target.classList.contains('plus')) {
+        var id = event.target.id.slice(4);
+        cart[id][0] += 1;
+        showNotification(cart[id][1] + " quantity increased to " + cart[id][0]);
+        updateCart(cart);
+    }
+});
+
+function updateCart(cart) {
+    var sum = 0;
+    var cartItems = '';
+    for (var item in cart) {
+        sum += cart[item][0];
+        cartItems += `<div class="product-card card align-items-center">
+            <div class="card-body">
+                <h5 class="card-title">${cart[item][1].slice(0, 20)}...</h5>
+                <h6 style="color: #ff0000">Rs. ${cart[item][2]} /-</h6>
+                <p>Quantity: ${cart[item][0]}</p>
+                <button id="minus${item}" class="btn btn-primary minus">-</button>
+                <span id="val${item}">${cart[item][0]}</span>
+                <button id="plus${item}" class="btn btn-primary plus">+</button>
+            </div>
+        </div>`;
+    }
+    localStorage.setItem('cart', JSON.stringify(cart));
+    document.getElementById('cart').innerHTML = sum;
+    document.getElementById('cartItems').innerHTML = cartItems;
+    updatePopover(cart);
+}
+
+function updatePopover(cart) {
+    var popStr = "<div class='mx-2 my-2'>";
+    var i = 1;
+    var j = 0;
+    for (var item in cart) {
+        popStr += "<b>" + i + "</b>. " + cart[item][1].slice(0, 15) + "... (Qty: " + cart[item][0] + ')<br>';
+        i += 1;
+        j += 1;
+    }
+    if (j == 0) {
+        popStr += "<p><b> No item available in your cart </b></p></div><div class='mx-2 my-2'><a href='/shop'><button class='btn btn-primary'>Add items</button></a></div>";
+    } else {
+        popStr += "</div><a href='/shop/checkout'><button class='btn btn-primary' id='checkout'>Checkout</button></a> <a href='/shop/'><button class='btn btn-primary' onclick='clearCart()' id='clearCart'>Clear Cart</button></a>";
+    }
+    document.getElementById("popcart").setAttribute('data-content', popStr);
+    $('#popcart').popover();
+}
+
+function clearCart() {
+    cart = JSON.parse(localStorage.getItem('cart'));
+    for (var item in cart) {
+        document.getElementById('div' + item).innerHTML = '<button id="pr' + item + '" class="btn btn-primary cart">Add to Cart</button>';
+    }
+    localStorage.clear();
+    cart = {};
+    updateCart(cart);
+}
+
+function showNotification(message) {
+    var notification = document.getElementById('notification');
+    notification.innerText = message;
+    notification.style.display = 'flex';
+    setTimeout(function() {
+        notification.style.display = 'none';
+    }, 2000);
+}
+
+function showProducts(category, subcat) {
+    var allSubcatProducts = document.querySelectorAll('.subcat-products');
+    allSubcatProducts.forEach(function(div) {
+        div.style.display = 'none';
+    });
+
+    var selectedSubcatDiv = document.getElementById('products-' + category + '-' + subcat);
+    if (selectedSubcatDiv) {
+        selectedSubcatDiv.style.display = 'flex';
+        
+        // Example: Hide certain products based on a condition (e.g., product type)
+        var productsInSubcat = selectedSubcatDiv.querySelectorAll('.product-card');
+        productsInSubcat.forEach(function(productCard) {
+            var productName = productCard.querySelector('.card-title').innerText;
+            if (productName.includes('Non-Veg')) {
+                productCard.style.display = 'none'; // Hide non-veg products
+            }
+        });
+    }
+}
+
+</script>
+{% endblock %}
